@@ -1,0 +1,6 @@
+@Trash_HostAddress = http://localhost:5226
+
+GET {{Trash_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
