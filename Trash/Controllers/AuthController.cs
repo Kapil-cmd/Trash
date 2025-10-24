@@ -1,11 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
+﻿using Application;
+using Core;
+using Core;
+using Microsoft.AspNetCore.Mvc;
 namespace Trash.Controllers
 {
     [ApiController]
     [Route("apiv1/[controller]/[action]")]
     public class AuthController : ControllerBase
     {
+        private readonly UserService _userService;
+        public AuthController(UserService userService)
+        {
+            _userService = userService;
+        }
         [HttpPost]
         public IActionResult Login([FromBody]Login model)
         {
@@ -26,16 +33,30 @@ namespace Trash.Controllers
             }
         }
         [HttpPost]
-        public IActionResult Register(RegisterViewModel model)
+        public IActionResult Register(RegisterUserViewModel model)
         {
             if (ModelState.IsValid)
             {
-                return Ok("USER REGISTERED!!!");
+                var response = _userService.RegisterUser(model);
+                if(response.Status == "00")
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return BadRequest(response);
+                }
             }
             else
             {
                 return Ok("USER NOT REGISTERED!!!");
             }
-        }    
+        }
+        [HttpGet]
+        public IActionResult Ciphar(string text)
+        {
+            var result = StaticMethod.getNetAplhabet(text);
+            return Ok(result);
+        }
     }
 }
