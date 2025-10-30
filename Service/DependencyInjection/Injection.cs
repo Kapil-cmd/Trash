@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application
@@ -7,8 +8,12 @@ namespace Application
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
             services.AddScoped<UserService>();
             services.AddScoped<ItemTypeService>();
+            services.AddScoped<ItemService>();
+
+
             return services;
         }
     }

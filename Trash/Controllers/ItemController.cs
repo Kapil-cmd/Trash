@@ -1,4 +1,5 @@
-﻿using Core;
+﻿using Application;
+using Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Trash
@@ -7,10 +8,24 @@ namespace Trash
     [Route("apiv1/[controller]/[action]")]
     public class ItemController : ControllerBase
     {
-        [HttpPost]
-        public async Task<IActionResult> AddItem([FromForm]AddItemViewModel model)
+        private readonly ItemService _itemService;
+        public ItemController(ItemService itemService)
         {
-            return Ok();
+            _itemService = itemService;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddItem([FromForm] AddItemViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var response = await _itemService.AddItem(model);
+                return Ok(response);
+            }
+            else
+            {
+                return Ok("PLEASE FILL THE FORM PROPERLY!!!");
+            }
         }
     }
 }

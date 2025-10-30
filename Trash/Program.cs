@@ -15,6 +15,7 @@ builder.Services.AddApplicationServices();
 
 builder.Services.AddSingleton<DbConnectionFactory>();
 builder.Services.AddSwaggerGen();
+//builder.Services.AddHttpContextAccessor();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -89,7 +90,7 @@ app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.UseStaticFiles();
 app.MapControllers();
 
 
