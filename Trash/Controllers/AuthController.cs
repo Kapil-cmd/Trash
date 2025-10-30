@@ -1,6 +1,5 @@
 ﻿using Application;
 using Core;
-using Core;
 using Microsoft.AspNetCore.Mvc;
 namespace Trash.Controllers
 {
@@ -14,26 +13,27 @@ namespace Trash.Controllers
             _userService = userService;
         }
         [HttpPost]
-        public IActionResult Login([FromBody]Login model)
+        public IActionResult Login([FromBody]LoginViewModel model)
         {
-                Dictionary<string,string> result = new Dictionary<string,string>();
-            if(model.UserName =="admin" && model.Password == "admin")
+            if (ModelState.IsValid)
             {
-                result.Add("username", model.UserName);
-                result.Add("password", model.Password);
-                result.Add("Status", "000");
-                result.Add("Message", "success");
-                return Ok(result);
+                var response = _userService.Login(model);
+                if(response.Status == "000")
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    return Ok(response);
+                }
             }
             else
             {
-                result.Add("Status", "200");
-                result.Add("Message", "Unauthorized access!!!");
-                return NotFound();
+                return Ok("PLEASE FILL THE FORM PROPERLY!!!");
             }
         }
         [HttpPost]
-        public IActionResult Register(RegisterUserViewModel model)
+        public IActionResult Register([FromBody]RegisterUserViewModel model)
         {
             if (ModelState.IsValid)
             {

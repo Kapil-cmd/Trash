@@ -11,6 +11,7 @@ namespace Core
         {
             services.AddSingleton<DbConnectionFactory>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IItemTypeRepository,ItemTypeRepository>();
             return services;
         }
     }

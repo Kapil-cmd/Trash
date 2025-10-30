@@ -86,6 +86,19 @@ namespace Application
             return finalNumber;
 
         }
+        public static string GetUserName(string userName)
+        {
+            int index = userName.IndexOf("@");
+            if(index > 0)
+            {
+                return userName.Substring(0, index);
+            }
+            else
+            {
+                   return userName;
+            }
+
+        }
       
 
     }

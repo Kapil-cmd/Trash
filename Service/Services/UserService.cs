@@ -16,10 +16,10 @@ namespace Application
             {
                 var data = _userRepository.GetAllUsers();
 
-                IEnumerable<User> users = data.ToList();
+                IEnumerable<User> users = data.Data.ToList();
 
-                response.Status = "00";
-                response.Message = "Success";
+                response.Status = data.ErrorCode;
+                response.Message = data.Message;
                 response.Data = users;
                 return response;
             }
@@ -31,11 +31,31 @@ namespace Application
 
             }
         }
-        public BaseResponseModel<SpResponse> RegisterUser(RegisterUserViewModel user)
+        public BaseResponseModel<LoginResponseViewModel> Login(LoginViewModel model)
         {
-            var response = new BaseResponseModel<SpResponse>();
+            var response = new BaseResponseModel<LoginResponseViewModel>();
             try
             {
+                var data = _userRepository.Login(model);
+
+                response.Status = data.ErrorCode;
+                response.Data = data.Data;
+                response.Message = data.Message;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.Status = "1";
+                response.Message = ex.Message;
+                return response;
+            }
+        }
+        public BaseResponseModel<SpResponse<string>> RegisterUser(RegisterUserViewModel user)
+        {
+            var response = new BaseResponseModel<SpResponse<string>>();
+            try
+            {
+                user.UserName = StaticMethod.GetUserName(user.EmailAddress);
                 var data = _userRepository.RegisterUser(user);
                 response.Status = data.ErrorCode;
                 response.Message = data.Message;
@@ -49,5 +69,6 @@ namespace Application
                 return response;
             }
         }
+
     }
 }

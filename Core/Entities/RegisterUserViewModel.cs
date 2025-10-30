@@ -1,5 +1,6 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core
 {
@@ -24,7 +25,9 @@ namespace Core
         [Required]
         [MinLength(5)]
         public string FullName { get; set; }
-        public string Status { get;set; }
-        public string UserType { get; set; }    
+        [NotMapped]
+        public string? Status { get;set; }
+        [NotMapped]
+        public string? UserType { get; set; }    
     }
 }

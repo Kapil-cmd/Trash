@@ -3,7 +3,8 @@ namespace Infrastructure
 {
     public interface IUserRepository
     {
-        public List<User> GetAllUsers();
-        public SpResponse RegisterUser(RegisterUserViewModel user);
+        public SpResponse<List<User>> GetAllUsers();
+        public SpResponse<string> RegisterUser(RegisterUserViewModel user);
+        public SpResponse<LoginResponseViewModel> Login(LoginViewModel login);
     }
 }

@@ -8,6 +8,7 @@ namespace Application
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             services.AddScoped<UserService>();
+            services.AddScoped<ItemTypeService>();
             return services;
         }
     }
