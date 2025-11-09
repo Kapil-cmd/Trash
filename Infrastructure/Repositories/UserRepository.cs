@@ -97,7 +97,9 @@ namespace Application
                                         PhoneNumber = reader["PhoneNumber"] != DBNull.Value ? reader["PhoneNumber"].ToString() : null,
                                         PostalCode = reader["PostalCode"] != DBNull.Value ? reader["PostalCode"].ToString() : null,
                                         StreetName = reader["StreetName"] != DBNull.Value ? reader["StreetName"].ToString() : null,
-                                        UserName = reader["UserName"] != DBNull.Value ? reader["UserName"].ToString() : null
+                                        UserName = reader["UserName"] != DBNull.Value ? reader["UserName"].ToString() : null,
+                                        HouseName = reader["HouseName"] != DBNull.Value? reader["HouseName"].ToString() : null,
+                                        CityName = reader["CityName"] != DBNull.Value? reader["CityName"].ToString() : null
 
                                     };
                                     response.Data = model;

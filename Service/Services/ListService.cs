@@ -1,5 +1,6 @@
 ﻿
 using Core;
+using System.Collections.Generic;
 using System.Web.Mvc;
 
 namespace Application
@@ -38,5 +39,61 @@ namespace Application
                 return response;
             }
         }
+        public BaseResponseModel<List<SelectListItem>> GetCountryList()
+        {
+            var response = new BaseResponseModel<List<SelectListItem>>();
+            try
+            {
+                var list = _listRepository.GetCountryList();
+                if(list.ErrorCode == "000")
+                {
+                    response.Status = list.ErrorCode;
+                    response.Data = list.Data;
+                    response.Message = list.Message;
+                    return response;
+                }
+                else
+                {
+                    response.Status = list.ErrorCode;
+                    response.Message = list.Message;
+                    return response;
+                }
+            }catch(Exception ex)
+            {
+                response.Status = "1";
+                response.Message = "TECHNICAL ERROR OCCURRED WHILE PROCESSING REQUEST!!!";
+                return response;
+            }
+        }
+        public BaseResponseModel<List<SelectListItem>> GetCountyList (long? countryId)
+        {
+            var response = new BaseResponseModel<List<SelectListItem>>();
+            try
+            {
+                var list = _listRepository.GetCountyList(countryId);
+                if (list.ErrorCode == "000")
+                {
+                    response.Status = list.ErrorCode;
+                    response.Data = list.Data;
+                    response.Message = list.Message;
+                    return response;
+                }
+                else
+                {
+                    response.Status = list.ErrorCode;
+                    response.Message = list.Message;
+                    return response;
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Status = "1";
+                response.Message = "TECHNICAL ERROR OCCURRED WHILE PROCESSING REQUEST!!!";
+                return response;
+            }
+     
+
+            }
+        
     }
 }

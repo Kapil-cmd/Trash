@@ -28,6 +28,8 @@ namespace Core
         public long? CountyId { get; set; }   
         public long? AddressId { get; set; }
         public string ImageAddress { get; set; }
+        public string? CityName { get; set; }
+        public string? HouseName { get; set; }
         public string PostalCode { get; set; }
     }
 }

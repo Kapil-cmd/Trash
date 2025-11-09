@@ -19,5 +19,17 @@ namespace Trash.Controllers
             var response = _listService.GetItemTypeList();
             return Ok(response);
         }
+        [HttpGet]
+        public IActionResult GetCountryList()
+        {
+            var response = _listService.GetCountryList();
+            return Ok(response);
+        }
+        [HttpGet]
+        public IActionResult GetCountyList(long? countryId)
+        {
+            var response = _listService.GetCountyList(countryId);
+            return Ok(response);
+        }
     }
 }
