@@ -13,13 +13,38 @@ namespace Application
             _httpContextAccessor = httpContextAccessor;
             _itemRepository = itemRepository;
         }
-
+        public BaseResponseModel<List<ImageDetailViewModel>> ItemList()
+        {
+            BaseResponseModel<List<ImageDetailViewModel>> response = new BaseResponseModel<List<ImageDetailViewModel>>();
+            try
+            {
+                var list = _itemRepository.GetItemList();
+                if(list.ErrorCode == "000")
+                {
+                    response.Status = list.ErrorCode;
+                    response.Data = list.Data;
+                    response.Message = list.Message;
+                    return response;
+                }
+                else
+                {
+                    response.Status = "1";
+                    response.Message = "TECHNICAL ERROR OCCURRED WHILE PROCESSING YOUR REQUEST!!!";
+                    return response;
+                }
+            }catch(Exception ex)
+            {
+                response.Status = "1";
+                response.Message = "TECHNICAL ERROR OCCURRED WHILE PROCESSING YOUR REQUEST!!!";
+                return response;
+            }
+        }
         public async Task<BaseResponseModel<string>> AddItem(AddItemViewModel model)
         {
             BaseResponseModel<string> response = new BaseResponseModel<string>();
             try
             {
-                if(model.ItemTypeId == 0)
+                if (model.ItemTypeId == 0)
                 {
                     response.Status = "1";
                     response.Message = "PLEASE CHOOSE THE ITEM TYPES!!!";

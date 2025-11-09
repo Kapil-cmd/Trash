@@ -3,6 +3,7 @@ using System.Security.AccessControl;
 using Core;
 using Infrastructure;
 using Microsoft.Data.SqlClient;
+using Microsoft.Identity.Client.RP;
 
 namespace Application
 {
@@ -52,6 +53,82 @@ namespace Application
             }
             return list;
         }
+
+        public SpResponse<UserDetailsViewModel> GetUserDetails(long userId)
+        {
+            SpResponse<UserDetailsViewModel> response = new SpResponse<UserDetailsViewModel>();
+            try
+            {
+                if(userId == 0)
+                {
+                    response.ErrorCode = "404";
+                    response.Message = "UNABLE TO FIND USER!!!";
+                    return response;
+                }
+                using(var connection = _connectionFactory.CreateConnection())
+                using (var command = new SqlCommand("PROC_USER", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@Flag", "GetUserDetail");
+                    command.Parameters.AddWithValue("@UserId", userId);
+
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.HasRows) 
+                        {
+                            if (reader.Read())
+                            {
+                                response.ErrorCode = reader["ErrorCode"].ToString();
+                                response.Message += reader["ErrorMessage"].ToString();
+                                if(response.ErrorCode == "000")
+                                {
+                                    var model = new UserDetailsViewModel()
+                                    {
+                                        UserId = reader["UserId"] != DBNull.Value ? Convert.ToInt64(reader["UserId"]) : 0,
+                                        AddressId = reader["AddressId"] != DBNull.Value ? Convert.ToInt64(reader["AddressId"]) : (long?)null,
+                                        CountryId = reader["CountryId"] != DBNull.Value ? Convert.ToInt64(reader["CountryId"]) : (long?)null,
+                                        CountyId = reader["CountyId"] != DBNull.Value ? Convert.ToInt64(reader["CountyId"]) : (long?)null,
+                                        Email = reader["EmailAddress"] != DBNull.Value ? reader["EmailAddress"].ToString() : null,
+                                        FullName = reader["FullName"] != DBNull.Value ? reader["FullName"].ToString() : null,
+                                        ImageAddress = reader["ImageAddress"] != DBNull.Value ? reader["ImageAddress"].ToString() : null,
+                                        PhoneNumber = reader["PhoneNumber"] != DBNull.Value ? reader["PhoneNumber"].ToString() : null,
+                                        PostalCode = reader["PostalCode"] != DBNull.Value ? reader["PostalCode"].ToString() : null,
+                                        StreetName = reader["StreetName"] != DBNull.Value ? reader["StreetName"].ToString() : null,
+                                        UserName = reader["UserName"] != DBNull.Value ? reader["UserName"].ToString() : null
+
+                                    };
+                                    response.Data = model;
+                                }
+                                else
+                                {
+                                    response.ErrorCode = "404";
+                                    response.Message = "UNABLE TO FIND USER!!!";
+                                    return response;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            response.ErrorCode = "404";
+                            response.Message = "UNABLE TO FIND USER!!!";
+                            return response;
+                        }
+
+                    }
+                    return response;
+                }
+            }
+            catch (Exception ex)
+            {
+                response.ErrorCode = "1";
+                response.Message = ex.Message;
+                return response;
+            }
+        }
+
         public SpResponse<LoginResponseViewModel> Login(LoginViewModel model)
         {
             var response = new SpResponse<LoginResponseViewModel>();
@@ -81,11 +158,15 @@ namespace Application
                             {
                                 response.Data = new LoginResponseViewModel
                                 {
+                                    UserId = Convert.ToInt64(reader["UserId"]),
                                     UserName = reader["UserName"].ToString(),
                                     FullName = reader["FullName"].ToString(),
                                     EmailAddress = reader["EmailAddress"].ToString(),
                                     PhoneNumber = reader["PhoneNumber"].ToString(),
-                                    Status = reader["Status"].ToString()
+                                    //Status = reader["Status"].ToString(),
+                                    IsVerified = reader["IsVerified"].ToString(),
+                                    ImageUrl = reader["ImageAddress"].ToString(),
+                                    Token = Guid.NewGuid().ToString()
                                 };
                             }
 

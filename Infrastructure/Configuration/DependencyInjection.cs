@@ -13,6 +13,7 @@ namespace Core
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IItemTypeRepository,ItemTypeRepository>();
             services.AddScoped<IItemRepository,ItemRepository>();
+            services.AddScoped<IListRepository,ListRepository>();
             return services;
         }
     }

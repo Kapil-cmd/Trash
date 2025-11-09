@@ -25,5 +25,11 @@ namespace Trash.Controllers
                 return BadRequest(response);
             }
         }
+        [HttpGet]
+        public IActionResult GetUserInfo(long userId)
+        {
+            var response = _userService.GetUserDetails(userId);
+            return Ok(response);
+        }
     }
 }

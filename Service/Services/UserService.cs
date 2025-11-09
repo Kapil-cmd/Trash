@@ -1,5 +1,6 @@
 ﻿using Core;
 using Infrastructure;
+using Microsoft.IdentityModel.Tokens.Experimental;
 namespace Application
 {
     public class UserService
@@ -37,7 +38,6 @@ namespace Application
             try
             {
                 var data = _userRepository.Login(model);
-
                 response.Status = data.ErrorCode;
                 response.Data = data.Data;
                 response.Message = data.Message;
@@ -56,6 +56,7 @@ namespace Application
             try
             {
                 user.UserName = StaticMethod.GetUserName(user.EmailAddress);
+                user.IsVerified = "N";
                 var data = _userRepository.RegisterUser(user);
                 response.Status = data.ErrorCode;
                 response.Message = data.Message;
@@ -69,6 +70,39 @@ namespace Application
                 return response;
             }
         }
-
+        public BaseResponseModel<UserDetailsViewModel> GetUserDetails(long userId)
+        {
+            var response = new BaseResponseModel<UserDetailsViewModel>();
+            try
+            {
+                   if(userId == 0)
+                {
+                    response.Status = "1";
+                    response.Message = "INVALID USER!!!";
+                    return response;
+                }
+                   var datas = _userRepository.GetUserDetails(userId);
+                if(datas.ErrorCode == "000")
+                {
+                    response.Status = datas.ErrorCode;
+                    response.Message = datas.Message;
+                    response.Data = datas.Data;
+                    return response;
+                }
+                else
+                {
+                    response.Status = "1";
+                    response.Message = "INVALID USER!!!";
+                    return response;
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Status = "1";
+                response.Message = ex.Message;
+                return response;
+                return response;
+            }
+        }
     }
 }

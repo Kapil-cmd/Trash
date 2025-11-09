@@ -1,15 +1,17 @@
 ﻿
 using Core;
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
 using System.Data;
 using System.Text.Json.Serialization;
+using System.Web.Mvc;
 
 namespace Infrastructure
 {
     public class ItemRepository : IItemRepository
     {
         private readonly DbConnectionFactory _dbConnectionFactory;
-
+        private static string spName = "PROC_ITEM";
         public ItemRepository(DbConnectionFactory dbConnectionFactory)
         {
             _dbConnectionFactory = dbConnectionFactory;
@@ -21,19 +23,20 @@ namespace Infrastructure
             try
             {
                 var imageModel = model.Image;
-                string images = JsonConvert.
+                string images = JsonConvert.SerializeObject(imageModel);
                 using (var connection = _dbConnectionFactory.CreateConnection())
-                using (var command = new SqlCommand("PROC_ITEM", connection))
+                using (var command = new SqlCommand(spName, connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
 
                     command.Parameters.AddWithValue("@Flag", "InsertItem");
                     command.Parameters.AddWithValue("@ItemName", model.ItemName ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@ItemStatus", model.Description ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@ItemStatus", model.Status ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@ItemDescription", model.Description ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@CreatedBy", model.CreatedBy ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@CreatedDateTime", model.Description ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@Images", imageModel ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@ItemTypeId", model.ItemTypeId);
+                    command.Parameters.AddWithValue("@CreatedDateTime", model.CreatedDateTime ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@Images", string.IsNullOrWhiteSpace(images) ? (object)DBNull.Value : images);
 
                     connection.Open();
 
@@ -42,16 +45,62 @@ namespace Infrastructure
                         if (reader.Read())
                         {
                             response.ErrorCode = reader["ErrorCode"].ToString();
-                            response.Message = reader["ErroMessage"].ToString();
+                            response.Message = reader["ErrorMessage"].ToString();
                         }
                     }
                 }
-                    return response;
+                return response;
             }
             catch (Exception ex)
             {
                 response.ErrorCode = "1";
                 response.Message = "TECHNICAL ERROR OCCURRED WHILE PROCESSING REQUEST!!!";
+                return response;
+            }
+        }
+
+        public SpResponse<List<ImageDetailViewModel>> GetItemList()
+        {
+            SpResponse<List<ImageDetailViewModel>> response = new SpResponse<List<ImageDetailViewModel>>();
+            try
+            {
+                using (var connection = _dbConnectionFactory.CreateConnection())
+                using (var command = new SqlCommand(spName, connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@Flag", "AllItemList");
+
+                    connection.Open();
+                    var list = new List<ImageDetailViewModel>();
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            var imageItem = new ImageDetailViewModel
+                            {
+                                Description = reader["Itemdescription"].ToString(),
+                                ItemId = Convert.ToInt64(reader["Itemid"]),
+                                ImageName = reader["ItemName"].ToString(),
+                                ImageUrl = reader["Images"].ToString(),
+                                ItemName = reader["ItemName"].ToString(),
+                                Status = reader["ItemStatus"].ToString(),
+                            };
+                            var images = imageItem.ImageUrl.Split(",");
+                            imageItem.Images = images.ToList();
+                            list.Add(imageItem);
+                        }
+                    }
+                    response.Data = list;
+                }
+                response.ErrorCode = "000";
+                response.Message = "ITEM FETCH SUCCESSFULLY!!!";
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.ErrorCode = "1";
+                response.Message = "UNABLE TO GET LIST!!!!";
                 return response;
             }
         }

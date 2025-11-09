@@ -27,5 +27,11 @@ namespace Trash
                 return Ok("PLEASE FILL THE FORM PROPERLY!!!");
             }
         }
+        [HttpGet]
+        public IActionResult GetItemList()
+        {
+            var response = _itemService.ItemList();
+            return Ok(response);
+        }
     }
 }

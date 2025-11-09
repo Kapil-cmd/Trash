@@ -12,6 +12,7 @@ namespace Application
             services.AddScoped<UserService>();
             services.AddScoped<ItemTypeService>();
             services.AddScoped<ItemService>();
+            services.AddScoped<ListService>();
 
 
             return services;

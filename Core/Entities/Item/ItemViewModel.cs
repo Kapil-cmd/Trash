@@ -35,4 +35,18 @@ namespace Core
         public string ImageName { get; set; }
         public string ImageSource { get; set; }
     }
+    public class ImageDetailViewModel
+    {
+        public ImageDetailViewModel()
+        {
+            Images = new List<string>();
+        }
+        public long ItemId { get; set; }
+        public string ItemName { get; set; }
+        public string Description { get; set; }
+        public string ImageUrl { get; set; }
+        public string ImageName { get; set; }
+        public string Status { get; set; }
+        public List<string> Images { get; set; }
+    }
 }

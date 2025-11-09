@@ -28,6 +28,8 @@ namespace Core
         [NotMapped]
         public string? Status { get;set; }
         [NotMapped]
-        public string? UserType { get; set; }    
+        public string? UserType { get; set; }
+        [NotMapped]
+        public string? IsVerified { get; set; }
     }
 }

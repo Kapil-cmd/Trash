@@ -26,17 +26,7 @@ namespace Trash.Controllers
             {
                 return Ok(response);
             }
-        }
-        [HttpGet]
-        public IActionResult GetItemTypeList()
-        {
-            List<SelectListItem> item = new List<SelectListItem>();
-            item.Add(new SelectListItem() { Text = "--SELECT ITEM TYPES--", Value = "" });
-            item.Add(new SelectListItem() { Text = "Electronics", Value = "1" });
-            item.Add(new SelectListItem() { Text = "Furniture", Value = "2" });
-            item.Add(new SelectListItem() { Text = "HouseHold", Value = "3" });
-            
-            return Ok(item);
+       
         }
     }
 }
