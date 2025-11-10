@@ -1,14 +1,17 @@
 ﻿using Core;
 using Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens.Experimental;
 namespace Application
 {
     public class UserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public UserService(IUserRepository userRepository,IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
         public BaseResponseModel<IEnumerable<User>> GetAllUsers()
         {
@@ -70,6 +73,59 @@ namespace Application
                 return response;
             }
         }
+        public async Task<BaseResponseModel<UpdateUserDetailViewModel>> UpdateUserInfo(UpdateUserDetailViewModel user)
+        {
+            var response = new BaseResponseModel<UpdateUserDetailViewModel>();
+            try
+            {
+                if (user.UserId == 0)
+                {
+                    response.Status = "1";
+                    response.Message = "NO USER FOUND!!!";
+                    return response;
+                }
+                if (user.profileImage != null)
+                {
+                    var path = DefaultConfiguration.StaticConfiguration.GetSection("Images:ProfileImages").Value;
+
+                    var file = user.profileImage;
+
+                    if (!Directory.Exists(path))
+                        Directory.CreateDirectory(path);
+                    var extension = Path.GetExtension(file.FileName);
+                    user.ImageName = $"{Guid.NewGuid().ToString()}{extension}";
+                    
+                    using(var stream = new FileStream(path, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                    var baseUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}";
+
+                    user.ImageUrl = $"{baseUrl}/Image/ProfileImage/{user.ImageName}";
+                    
+                }
+
+                var request = _userRepository.UpdateUserDetails(user);
+
+                if(request.ErrorCode == "000")
+                {
+                    response.Status = request.ErrorCode;
+                    response.Message = request.Message;
+                    return response;
+                }
+                else
+                {
+                    response.Status = "1";
+                    response.Message = "TECHNICAL ERROR OCCURRED WHILE UPDATING DETAILS!!!";
+                    return response;
+                }
+            }catch(Exception ex) 
+            {
+                response.Status = "1";
+                response.Message = "TECHNICAL ERROR OCCURRED WHILE PROCESSING REQUEST!!!";
+                return response;
+            }
+        }
         public BaseResponseModel<UserDetailsViewModel> GetUserDetails(long userId)
         {
             var response = new BaseResponseModel<UserDetailsViewModel>();
@@ -104,5 +160,6 @@ namespace Application
                 return response;
             }
         }
+
     }
 }

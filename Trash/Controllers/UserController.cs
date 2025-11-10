@@ -1,4 +1,5 @@
 ﻿using Application;
+using Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Trash.Controllers
@@ -16,7 +17,7 @@ namespace Trash.Controllers
         public IActionResult GetUserList()
         {
             var response = _userService.GetAllUsers();
-            if(response.Status == "000")
+            if (response.Status == "000")
             {
                 return Ok(response);
             }
@@ -30,6 +31,19 @@ namespace Trash.Controllers
         {
             var response = _userService.GetUserDetails(userId);
             return Ok(response);
+        }
+        [HttpPost]
+        public IActionResult UpdateUserInfo(UpdateUserDetailViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var response = _userService.UpdateUserInfo(model);
+                return Ok(response);
+            }
+            else
+            {
+                return Ok("PLEASE FILL THE FORM PROPERLY!!!!");
+            }
         }
     }
 }

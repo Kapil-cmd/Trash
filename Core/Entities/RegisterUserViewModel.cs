@@ -11,12 +11,14 @@ namespace Core
         public string UserName { get; set; }
         [Required]
         [EmailAddress]
+
         public string EmailAddress { get; set; }
 
         [Required]
         [MinLength(8)]
         public string Password { get; set; }
         [Required]
+        [PhoneNumberValidation]
         public string PhoneNumber { get; set; }
         [Required]
         [MinLength(10)]

@@ -59,13 +59,13 @@ namespace Application
             SpResponse<UserDetailsViewModel> response = new SpResponse<UserDetailsViewModel>();
             try
             {
-                if(userId == 0)
+                if (userId == 0)
                 {
                     response.ErrorCode = "404";
                     response.Message = "UNABLE TO FIND USER!!!";
                     return response;
                 }
-                using(var connection = _connectionFactory.CreateConnection())
+                using (var connection = _connectionFactory.CreateConnection())
                 using (var command = new SqlCommand("PROC_USER", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
@@ -77,13 +77,13 @@ namespace Application
 
                     using (var reader = command.ExecuteReader())
                     {
-                        if (reader.HasRows) 
+                        if (reader.HasRows)
                         {
                             if (reader.Read())
                             {
                                 response.ErrorCode = reader["ErrorCode"].ToString();
                                 response.Message += reader["ErrorMessage"].ToString();
-                                if(response.ErrorCode == "000")
+                                if (response.ErrorCode == "000")
                                 {
                                     var model = new UserDetailsViewModel()
                                     {
@@ -98,8 +98,8 @@ namespace Application
                                         PostalCode = reader["PostalCode"] != DBNull.Value ? reader["PostalCode"].ToString() : null,
                                         StreetName = reader["StreetName"] != DBNull.Value ? reader["StreetName"].ToString() : null,
                                         UserName = reader["UserName"] != DBNull.Value ? reader["UserName"].ToString() : null,
-                                        HouseName = reader["HouseName"] != DBNull.Value? reader["HouseName"].ToString() : null,
-                                        CityName = reader["CityName"] != DBNull.Value? reader["CityName"].ToString() : null
+                                        HouseName = reader["HouseName"] != DBNull.Value ? reader["HouseName"].ToString() : null,
+                                        CityName = reader["CityName"] != DBNull.Value ? reader["CityName"].ToString() : null
 
                                     };
                                     response.Data = model;
@@ -222,6 +222,53 @@ namespace Application
             }
 
             return response;
+        }
+
+        public SpResponse<UpdateUserDetailViewModel> UpdateUserDetails(UpdateUserDetailViewModel userDetails)
+        {
+            var response = new SpResponse<UpdateUserDetailViewModel>();
+            try
+            {
+                using (var connection = _connectionFactory.CreateConnection())
+                using (var command = new SqlCommand("PROC_USER", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@Flag", "UpdateUser");
+                    command.Parameters.AddWithValue("@UserId", userDetails.UserId);
+                    command.Parameters.AddWithValue("@PhoneNumber", userDetails.PhoneNumber ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@Email", userDetails.Email ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@FullName", userDetails.FullName ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@AddressId", userDetails.AddressId ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@HouseName", userDetails.HouseName ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@StreetName", userDetails.StreetName ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@PostalCode", userDetails.PostalCode ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@CityName", userDetails.City ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@CountyId", userDetails.CountyId ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@CountryId", userDetails.CountryId ?? (object)DBNull.Value);
+
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                        if (reader.Read())
+                        {
+                            response.ErrorCode = reader["ErrorMessage"].ToString();
+                            response.Message = reader["ErrorMessage"].ToString();
+                        }
+                        else
+                        {
+                            response.ErrorCode = reader["ErrorMessage"].ToString();
+                            response.Message = reader["ErrorMessage"].ToString();
+                        }
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.ErrorCode = ex.Message;
+                response.Message = "TECHNICAL ERROR WHILE OCCURING REQUEST!!!";
+                return response;
+            }
         }
     }
 }

@@ -7,5 +7,6 @@ namespace Infrastructure
         public SpResponse<string> RegisterUser(RegisterUserViewModel user);
         public SpResponse<LoginResponseViewModel> Login(LoginViewModel login);
         public SpResponse<UserDetailsViewModel> GetUserDetails(long userId);
+        public SpResponse<UpdateUserDetailViewModel> UpdateUserDetails(UpdateUserDetailViewModel userDetails);
     }
 }
