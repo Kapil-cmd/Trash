@@ -110,5 +110,38 @@ namespace Infrastructure
                 return response;
             }
         }
+
+        public SpResponse<string> UpdateItemStatus(UpdateItemStatus model)
+        {
+            var response = new SpResponse<string>(); try
+            {
+                using (var connection = _dbConnectionFactory.CreateConnection())
+                using (var command = new SqlCommand(spName, connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@Flag", "ChangeStatus");
+                    command.Parameters.AddWithValue("@ItemId", model.ItemId);
+                    command.Parameters.AddWithValue("@UserId", model.UserId);
+                    command.Parameters.AddWithValue("@ItemStatus", model.Status ?? (object)DBNull.Value);
+
+                    connection.Open();
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            response.ErrorCode = reader["ErrorCode"].ToString();
+                            response.Message = reader["ErrorMessage"].ToString();
+                        };
+                    }
+                }
+                return response;
+            }catch(Exception ex)
+            {
+                response.ErrorCode = "1";
+                response.Message = "UNABLE TO UPDATE ITEM STATUS!!!!";
+                return response;
+            }
+        }
     }
 }

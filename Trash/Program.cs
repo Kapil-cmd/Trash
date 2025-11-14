@@ -1,7 +1,8 @@
 using Application;
+using Core;
 using Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
-using Core;
+using Microsoft.AspNetCore.Http;
 using System.Net;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,14 +19,21 @@ builder.Services.AddSwaggerGen();
 //builder.Services.AddHttpContextAccessor();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy => policy.WithOrigins("http://localhost:5173")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod());
+    options.AddPolicy("AllowReact", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
-
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None;
+});
 builder.Configuration.SetStaticConfiguration();
 builder.Services.AddCoreServices();
+builder.Services.AddSignalR();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo()
@@ -86,7 +94,12 @@ if (app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
     app.UseSwaggerUI();
 }
-app.UseCors("AllowAll");
+app.UseCors("AllowReact");
+app.UseEndpoints(endPoints =>
+{
+    endPoints.MapHub<StatusHub>("/statusHub");
+    endPoints.MapHub<NotificationHub>("/notificationHub");
+});
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

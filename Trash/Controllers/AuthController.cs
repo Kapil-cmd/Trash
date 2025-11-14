@@ -13,14 +13,34 @@ namespace Trash.Controllers
             _userService = userService;
         }
         [HttpPost]
-        public IActionResult Login([FromBody]LoginViewModel model)
+        public IActionResult Login([FromBody] LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var response = _userService.Login(model);
-                if(response.Status == "000")
+                if (response.Status == "000")
                 {
-                    return Ok(response);
+                    var cookieOptions = new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.None,
+                        Expires = DateTime.UtcNow.AddDays(7)
+                    };
+                    var refreshToken = Guid.NewGuid().ToString();
+                    Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+                    return Ok(new
+                    {
+                        refreshToken,
+                        UserId = response.Data.UserId,
+                        UserName = response.Data.UserName,
+                        FullName = response.Data.FullName,
+                        EmailAddress = response.Data.EmailAddress,
+                        Status = response.Status,
+                        PhoneNumber = response.Data.PhoneNumber,
+                        IsVerified = response.Data.IsVerified,
+                        ImageUrl = response.Data.ImageUrl,
+                    });
                 }
                 else
                 {
@@ -33,12 +53,12 @@ namespace Trash.Controllers
             }
         }
         [HttpPost]
-        public IActionResult Register([FromBody]RegisterUserViewModel model)
+        public IActionResult Register([FromBody] RegisterUserViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var response = _userService.RegisterUser(model);
-                if(response.Status == "00")
+                if (response.Status == "00")
                 {
                     return Ok(response);
                 }

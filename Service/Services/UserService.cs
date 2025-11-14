@@ -103,7 +103,7 @@ namespace Application
                     }
                     var baseUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}";
 
-                    user.ImageUrl = $"{baseUrl}/Image/ProfileImage/{user.ImageName}";
+                    user.ImageUrl = $"{baseUrl}/Images/ProfileImage/{user.ImageName}";
                     
                 }
 

@@ -33,5 +33,18 @@ namespace Trash
             var response = _itemService.ItemList();
             return Ok(response);
         }
+        [HttpPost]
+        public async Task<IActionResult> UpdateItemStatus(UpdateItemStatus model)
+        {
+            if (ModelState.IsValid)
+            {
+                var response = await _itemService.UpdateItemStatus(model);
+                return Ok();
+            }
+            else
+            {
+                return Ok();
+            }
+        }
     }
 }

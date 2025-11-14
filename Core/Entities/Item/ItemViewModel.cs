@@ -57,4 +57,13 @@ namespace Core
 
         public List<string> Images { get; set; }
     }
+    public class UpdateItemStatus
+    {
+        [Required(ErrorMessage = "USER ID IS REQUIRED!!!")]
+        public long UserId { get; set; }
+        [Required(ErrorMessage ="ITEM ID IS REQUIRED!!!")]
+        public long ItemId { get; set; }
+        [Required(ErrorMessage ="STATUS IS REQUIRED!!!")]
+        public string Status { get; set; }
+    }
 }

@@ -1,18 +1,20 @@
 ﻿
 using Core;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Application
 {
     public class ItemService
     {
-        private readonly IHubContext<>
+        private readonly IHubContext<StatusHub> _hub;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IItemRepository _itemRepository;
-        public ItemService(IHttpContextAccessor httpContextAccessor, IItemRepository itemRepository)
+        public ItemService(IHttpContextAccessor httpContextAccessor, IItemRepository itemRepository, IHubContext<StatusHub> hub)
         {
             _httpContextAccessor = httpContextAccessor;
             _itemRepository = itemRepository;
+            _hub = hub;
         }
         public BaseResponseModel<List<ImageDetailViewModel>> ItemList()
         {
@@ -20,7 +22,7 @@ namespace Application
             try
             {
                 var list = _itemRepository.GetItemList();
-                if(list.ErrorCode == "000")
+                if (list.ErrorCode == "000")
                 {
                     response.Status = list.ErrorCode;
                     response.Data = list.Data;
@@ -33,7 +35,8 @@ namespace Application
                     response.Message = "TECHNICAL ERROR OCCURRED WHILE PROCESSING YOUR REQUEST!!!";
                     return response;
                 }
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 response.Status = "1";
                 response.Message = "TECHNICAL ERROR OCCURRED WHILE PROCESSING YOUR REQUEST!!!";
@@ -45,7 +48,7 @@ namespace Application
             BaseResponseModel<string> response = new BaseResponseModel<string>();
             try
             {
-                if(model.UserId == 0)
+                if (model.UserId == 0)
                 {
                     response.Status = "1";
                     response.Message = "UNABLE TO ADD ITEMS!!!";
@@ -116,6 +119,76 @@ namespace Application
             {
                 response.Status = "1";
                 response.Message = "TECHNICAL ERROR OCCURRED WHILE PROCESSING REQUEST!!!";
+                return response;
+            }
+        }
+
+        public async Task<BaseResponseModel<string>> UpdateItemStatus(UpdateItemStatus model)
+        {
+            var response = new BaseResponseModel<string>();
+            try
+            {
+                if (model.ItemId == 0)
+                {
+                    model.Status = "Active";
+                    await _hub.Clients.All.SendAsync("ItemStatusUpdated", new
+                    {
+                        model.ItemId,
+                        model.Status,
+                    });
+                    response.Status = "1";
+                    response.Message = $"UNABLE TO UPDATE STATUS OF AN ITEM AS {model.Status}";
+                    return response;
+                }
+                if (model.UserId == 0)
+                {
+                    model.Status = "Active";
+                    await _hub.Clients.All.SendAsync("ItemStatusUpdated", new
+                    {
+                        model.ItemId,
+                        model.Status,
+                    });
+                    response.Status = "1";
+                    response.Message = $"UNABLE TO UPDATE STATUS OF AN ITEM AS {model.Status}";
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(model.Status))
+                {
+                    model.Status = "Active";
+                    await _hub.Clients.All.SendAsync("ItemStatusUpdated", new
+                    {
+                        model.ItemId,
+                        model.Status,
+                    });
+                    response.Status = "1";
+                    response.Message = $"UNABLE TO UPDATE STATUS OF AN ITEM AS {model.Status}";
+                    return response;
+                }
+
+                var result = _itemRepository.UpdateItemStatus(model);
+                if (result.ErrorCode == "000")
+                {
+                    await _hub.Clients.All.SendAsync("ItemStatusUpdated", new
+                    {
+                        model.ItemId,
+                        model.Status
+                    });
+                }
+                else
+                {
+                    model.Status = "Active";
+                    await _hub.Clients.All.SendAsync("ItemStatusUpdated", new
+                    {
+                        model.ItemId,
+                        model.Status,
+                    });
+                }
+                    return response;
+            }
+            catch (Exception ex)
+            {
+                response.Status = "1";
+                response.Message = $"UNABLE TO UPDATE STATUS OF AN ITEM AS {model.Status}";
                 return response;
             }
         }
