@@ -6,6 +6,7 @@ namespace Application
 {
     public class ItemService
     {
+        private readonly IHubContext<>
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IItemRepository _itemRepository;
         public ItemService(IHttpContextAccessor httpContextAccessor, IItemRepository itemRepository)
@@ -118,5 +119,6 @@ namespace Application
                 return response;
             }
         }
+
     }
 }
