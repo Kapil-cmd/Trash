@@ -35,6 +35,7 @@ namespace Infrastructure
                     command.Parameters.AddWithValue("@ItemDescription", model.Description ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@CreatedBy", model.CreatedBy ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@ItemTypeId", model.ItemTypeId);
+                    command.Parameters.AddWithValue("@UserId", model.UserId);
                     command.Parameters.AddWithValue("@CreatedDateTime", model.CreatedDateTime ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@Images", string.IsNullOrWhiteSpace(images) ? (object)DBNull.Value : images);
 
@@ -75,7 +76,7 @@ namespace Infrastructure
                     var list = new List<ImageDetailViewModel>();
                     using (var reader = command.ExecuteReader())
                     {
-                        if (reader.Read())
+                        while (reader.Read())
                         {
                             var imageItem = new ImageDetailViewModel
                             {
@@ -84,6 +85,11 @@ namespace Infrastructure
                                 ImageName = reader["ItemName"].ToString(),
                                 ImageUrl = reader["Images"].ToString(),
                                 ItemName = reader["ItemName"].ToString(),
+                                CityName = reader["CityName"].ToString(),
+                                StreetName= reader["StreetName"].ToString(),
+                                PostalCode= reader["PostalCode"].ToString(),
+                                HouseName= reader["HouseName"].ToString(),
+                                CountyName= reader["CountyName"].ToString(),
                                 Status = reader["ItemStatus"].ToString(),
                             };
                             var images = imageItem.ImageUrl.Split(",");

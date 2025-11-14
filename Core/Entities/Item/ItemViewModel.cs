@@ -13,6 +13,8 @@ namespace Core
         {
             Image = new List<ItemImageViewModel>();
         }
+        [Required]
+        public long UserId { get; set; }
         public List<ItemImageViewModel>? Image { get; set;  }
         [Required(ErrorMessage ="PLEASE ENTER THE IMAGENAME!!!")]
         [MinLength(3)]
@@ -47,6 +49,12 @@ namespace Core
         public string ImageUrl { get; set; }
         public string ImageName { get; set; }
         public string Status { get; set; }
+        public string CityName{get;set;}
+        public string CountyName{get;set;}
+        public string StreetName{get;set;}
+        public string PostalCode{get;set;}
+        public string HouseName { get; set; }
+
         public List<string> Images { get; set; }
     }
 }

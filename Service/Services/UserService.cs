@@ -94,8 +94,10 @@ namespace Application
                         Directory.CreateDirectory(path);
                     var extension = Path.GetExtension(file.FileName);
                     user.ImageName = $"{Guid.NewGuid().ToString()}{extension}";
+
+                    var imagePath = Path.Combine(path, user.ImageName);
                     
-                    using(var stream = new FileStream(path, FileMode.Create))
+                    using(var stream = new FileStream(imagePath, FileMode.Create))
                     {
                         await file.CopyToAsync(stream);
                     }

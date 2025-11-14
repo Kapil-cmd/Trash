@@ -33,11 +33,11 @@ namespace Trash.Controllers
             return Ok(response);
         }
         [HttpPost]
-        public IActionResult UpdateUserInfo(UpdateUserDetailViewModel model)
+        public async Task<IActionResult> UpdateUserInfo(UpdateUserDetailViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var response = _userService.UpdateUserInfo(model);
+                var response = await _userService.UpdateUserInfo(model);
                 return Ok(response);
             }
             else

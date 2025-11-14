@@ -237,7 +237,7 @@ namespace Application
                     command.Parameters.AddWithValue("@Flag", "UpdateUser");
                     command.Parameters.AddWithValue("@UserId", userDetails.UserId);
                     command.Parameters.AddWithValue("@PhoneNumber", userDetails.PhoneNumber ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@Email", userDetails.Email ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@EmailAddress", userDetails.Email ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@FullName", userDetails.FullName ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@AddressId", userDetails.AddressId ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@HouseName", userDetails.HouseName ?? (object)DBNull.Value);
@@ -246,13 +246,15 @@ namespace Application
                     command.Parameters.AddWithValue("@CityName", userDetails.City ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@CountyId", userDetails.CountyId ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@CountryId", userDetails.CountryId ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@ImageUrl", userDetails.ImageUrl ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@ImageName", userDetails.ImageName ?? (object)DBNull.Value);
 
                     connection.Open();
 
                     using (var reader = command.ExecuteReader())
                         if (reader.Read())
                         {
-                            response.ErrorCode = reader["ErrorMessage"].ToString();
+                            response.ErrorCode = reader["ErrorCode"].ToString();
                             response.Message = reader["ErrorMessage"].ToString();
                         }
                         else

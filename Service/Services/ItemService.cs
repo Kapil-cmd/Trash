@@ -44,6 +44,12 @@ namespace Application
             BaseResponseModel<string> response = new BaseResponseModel<string>();
             try
             {
+                if(model.UserId == 0)
+                {
+                    response.Status = "1";
+                    response.Message = "UNABLE TO ADD ITEMS!!!";
+                    return response;
+                }
                 if (model.ItemTypeId == 0)
                 {
                     response.Status = "1";

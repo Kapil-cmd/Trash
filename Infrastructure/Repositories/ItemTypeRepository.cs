@@ -46,5 +46,45 @@ namespace Infrastructure
                 return response;
             }
         }
+
+        public SpResponse<List<ItemTypesViewModel>> GetItemTypeList()
+        {
+            var response = new SpResponse<List<ItemTypesViewModel>>();
+            try
+            {
+                var list = new List<ItemTypesViewModel>();
+                using(var connection = _connectionFactory.CreateConnection())
+                    using(var command = new SqlCommand("PROC_ITEMTYPE", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@Flag", "GetItemList");
+
+                    connection.Open();
+
+                    using(var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var model = new ItemTypesViewModel
+                            {
+                                CreatedBy = reader["CreatedBy"].ToString(),
+                                CreatedDateTime = Convert.ToDateTime(reader["CreatedDateTime"]).ToString("dd/MM/yyyy"),
+                                Description = reader["Description"].ToString(),
+                                ItemTypeName = reader["ItemTypeName"].ToString(),
+                                Status = reader["Status"].ToString()
+                            };
+                            list.Add(model);
+                        }
+                    }
+                    return response;
+                }
+            }catch(Exception ex)
+            {
+                response.ErrorCode = "99";
+                response.Message = "No response from database.";
+                return response;
+            }
+        }
     }
 }
