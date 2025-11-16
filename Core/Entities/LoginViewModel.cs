@@ -21,5 +21,7 @@ namespace Core
         public string IsVerified { get; set; }
         public string ImageUrl { get; set; }
         public string Token { get; set; }
+        public string RefreshToken {  get; set; }
+        public string ExpiryTimeUtc {  get; set; }
     }
 }
