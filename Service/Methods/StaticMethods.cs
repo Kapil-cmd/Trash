@@ -1,9 +1,9 @@
-﻿
-using Core;
+﻿using Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using System.Diagnostics;
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -13,113 +13,134 @@ namespace Application
 {
     public static class StaticMethods
     {
-        private const string Key = "traSHFindEr@123";
+        private const string Key = "traSHFindEr@123"; 
+
         public static string EncryptUserData(UserJwtViewModel model, string issuedDate)
         {
-            DateTime issueDate = DateTime.Parse(issuedDate);
-
             string jsonData = JsonConvert.SerializeObject(model);
+            byte[] plainBytes = Encoding.UTF8.GetBytes(jsonData);
 
-            byte[] inputArray = UTF8Encoding.UTF8.GetBytes(jsonData);
-            TripleDES tripleDES = TripleDES.Create();
-            tripleDES.Key = UTF8Encoding.UTF8.GetBytes(Key + issueDate.ToString("ssmmhhddMMyy"));
-            tripleDES.Mode = CipherMode.ECB;
-            tripleDES.Padding = PaddingMode.PKCS7;
-            ICryptoTransform cTransform = tripleDES.CreateDecryptor();
-            byte[] resultArray = cTransform.TransformFinalBlock(inputArray, 0, inputArray.Length);
-            tripleDES.Clear();
-            return Convert.ToBase64String(resultArray, 0, resultArray.Length);
+            using Aes aes = Aes.Create();
+            aes.Key = SHA256.HashData(Encoding.UTF8.GetBytes(Key + issuedDate)); // 32-byte key
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            aes.GenerateIV(); // random IV for security
+
+            using ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+            byte[] encryptedBytes = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
+
+            byte[] combined = new byte[aes.IV.Length + encryptedBytes.Length];
+            Array.Copy(aes.IV, 0, combined, 0, aes.IV.Length);
+            Array.Copy(encryptedBytes, 0, combined, aes.IV.Length, encryptedBytes.Length);
+
+            return Convert.ToBase64String(combined);
         }
+
         public static UserJwtViewModel DecryptUserData(string encryptedData, string issuedDate)
         {
-            DateTime issueDates = DateTime.Parse(issuedDate);
+            byte[] combined = Convert.FromBase64String(encryptedData);
 
-            byte[] inputArray = Convert.FromBase64String(encryptedData);
-            TripleDES tripleDES = TripleDES.Create();
-            tripleDES.Key = UTF8Encoding.UTF8.GetBytes(Key + issueDates.ToString("ssmmhhddMMyy"));
-            tripleDES.Mode = CipherMode.ECB;
-            tripleDES.Padding = PaddingMode.PKCS7;
-            ICryptoTransform cryptoTransform = tripleDES.CreateDecryptor();
-            byte[] resultArray = cryptoTransform.TransformFinalBlock(inputArray, 0, inputArray.Length);
-            tripleDES.Clear();
-            string jsonData = UTF8Encoding.UTF8.GetString(resultArray);
-            UserJwtViewModel model = JsonConvert.DeserializeObject<UserJwtViewModel>(jsonData);
-            return model;
+            using Aes aes = Aes.Create();
+            aes.Key = SHA256.HashData(Encoding.UTF8.GetBytes(Key + issuedDate));
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+
+            byte[] iv = new byte[16];
+            Array.Copy(combined, 0, iv, 0, iv.Length);
+            aes.IV = iv;
+
+            byte[] cipherText = new byte[combined.Length - iv.Length];
+            Array.Copy(combined, iv.Length, cipherText, 0, cipherText.Length);
+
+            using ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+            byte[] decryptedBytes = decryptor.TransformFinalBlock(cipherText, 0, cipherText.Length);
+
+            string jsonData = Encoding.UTF8.GetString(decryptedBytes);
+            return JsonConvert.DeserializeObject<UserJwtViewModel>(jsonData);
         }
-        //public static List<Claim> GetClaims(UserJwtViewModel model)
-        //{
-        //    string issuedDate = StaticMethods.GetDateTime().ToString("G");
-        //    var userData = StaticMethods.EncryptUserData(model, issuedDate);
-        //    var claims = new List<Claim>
-        //    {
-        //        new Claim("UserToken", userData),
-        //        new Claim("IssuedDate", issuedDate),
-        //        new Claim(ClaimTypes.Name, model.UserName??model.EmailAddress),
-        //    };
-        //    return claims;
-        //}
+
+        // Generate JWT
         public static BaseResponseModel<LoginResponseViewModel> GenTokenkey(LoginResponseViewModel model)
         {
             try
             {
-                LoginResponseViewModel response = new LoginResponseViewModel();
-                response = new LoginResponseViewModel();
                 if (model == null) throw new ArgumentException(nameof(model));
-                // Get secret key
-                var key = Encoding.ASCII.GetBytes(DefaultConfiguration.StaticConfiguration.GetSection("JsonWebTokenKeys:IssuerSigningKey").Value);
-                DateTime notBefore = new DateTimeOffset(DateTime.Now).DateTime;
-                DateTime expires = new DateTimeOffset(DateTime.Now.AddMinutes(Convert.ToInt32(DefaultConfiguration.StaticConfiguration.GetSection("JsonWebTokenKeys:ValidationLifeTimeInMin").Value ?? "5"))).DateTime;
 
-                response.ExpiryTimeUtc = expires.ToUniversalTime().ToString("s");
+                var key = Encoding.ASCII.GetBytes(DefaultConfiguration.StaticConfiguration
+                    .GetSection("JsonWebTokenKeys:IssuerSigningKey").Value);
+
+                string issuedDate = DateTime.UtcNow.ToString("s");
+                string encryptedUserData = EncryptUserData(new UserJwtViewModel
+                {
+                    UserId = model.UserId,
+                    EmailAddress = model.EmailAddress,
+                    UserName = model.UserName,
+                    FullName = model.FullName,
+                    PhoneNumber = model.PhoneNumber,
+                    Status = model.Status
+                }, issuedDate);
+
+                var claims = new List<Claim>
+                {
+                    new Claim("UserToken", encryptedUserData),
+                    new Claim("IssuedDate", issuedDate),
+                    new Claim(JwtRegisteredClaimNames.Sub, model.UserId.ToString()),
+                    new Claim(JwtRegisteredClaimNames.Email, model.EmailAddress ?? ""),
+                    new Claim(JwtRegisteredClaimNames.UniqueName, model.UserName ?? "")
+                };
+
+                DateTime expires = DateTime.UtcNow.AddMinutes(
+                    Convert.ToInt32(DefaultConfiguration.StaticConfiguration
+                        .GetSection("JsonWebTokenKeys:ValidationLifeTimeInMin").Value ?? "5"));
+
                 var JWToken = new JwtSecurityToken(
                     issuer: DefaultConfiguration.StaticConfiguration.GetSection("JsonWebTokenKeys:ValidIssuer").Value,
                     audience: DefaultConfiguration.StaticConfiguration.GetSection("JsonWebTokenKeys:ValidAudience").Value,
-                    //claims: GetClaims(model),
-                    notBefore: notBefore,
+                    claims: claims,
+                    notBefore: DateTime.UtcNow,
                     expires: expires,
-                    signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256));
-                response.Token = new JwtSecurityTokenHandler().WriteToken(JWToken);
-                response.RefreshToken = model.RefreshToken;
-                response.UserId = model.UserId;
-                response.EmailAddress = model.EmailAddress;
-                response.RefreshToken = model.RefreshToken;
-                response.UserName = model.UserName;
-                response.UserName = model.UserName;
-                response.UserId = model.UserId;
+                    signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
+                );
 
-                return new BaseResponseModel<LoginResponseViewModel>()
+                string tokenString = new JwtSecurityTokenHandler().WriteToken(JWToken);
+
+                model.Token = tokenString;
+                model.ExpiryTimeUtc = expires.ToUniversalTime().ToString("s");
+
+                return new BaseResponseModel<LoginResponseViewModel>
                 {
                     Status = "000",
-                    Message = "Login Successfull",
-                    Data = response,
+                    Message = "Login Successful",
+                    Data = model
                 };
             }
             catch (Exception ex)
             {
-                return new BaseResponseModel<LoginResponseViewModel>()
+                return new BaseResponseModel<LoginResponseViewModel>
                 {
                     Status = "500",
-                    Message = "Error: " + ex.Message,
+                    Message = "Error: " + ex.Message
                 };
             }
         }
 
+        // Validate JWT
         public static BaseResponseModel<UserJwtViewModel> ParseToken(string token)
         {
-            HttpContextAccessor httpContextAccessor = new HttpContextAccessor();
             if (string.IsNullOrWhiteSpace(token))
             {
                 return new BaseResponseModel<UserJwtViewModel>
                 {
-                    Message = "NO TOKEN FOUND!!!",
-                    Status = "404"
+                    Status = "404",
+                    Message = "NO TOKEN FOUND!!!"
                 };
-
             }
-            token = token?.Replace("Bearer", "");
 
-            var jwthandler = new JwtSecurityTokenHandler();
+            token = token.Replace("Bearer ", "");
+
             var key = Encoding.ASCII.GetBytes(DefaultConfiguration.StaticConfiguration.GetSection("JsonWebTokenKeys:IssuerSigningKey").Value);
+            var jwthandler = new JwtSecurityTokenHandler();
+
             try
             {
                 jwthandler.ValidateToken(token, new Microsoft.IdentityModel.Tokens.TokenValidationParameters
@@ -130,35 +151,42 @@ namespace Application
                     ValidateAudience = true,
                     ValidIssuer = DefaultConfiguration.StaticConfiguration.GetSection("JsonWebTokenKeys:ValidIssuer").Value,
                     ValidAudience = DefaultConfiguration.StaticConfiguration.GetSection("JsonWebTokenKeys:ValidAudience").Value,
-                    // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
-                    ClockSkew = TimeSpan.Zero,
-
+                    ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
+
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                string userToken = jwtToken.Claims.Where(x => x.Type == "UserToken").FirstOrDefault().Value.ToString();
-                string issuedDate = jwtToken.Claims.Where(x => x.Type == "IssuedDate").FirstOrDefault().Value.ToString();
-                var userData = StaticMethods.DecryptUserData(userToken, issuedDate);
 
+                string userToken = jwtToken.Claims.FirstOrDefault(c => c.Type == "UserToken")?.Value;
+                string issuedDate = jwtToken.Claims.FirstOrDefault(c => c.Type == "IssuedDate")?.Value;
 
-                return new BaseResponseModel<UserJwtViewModel>()
+                if (string.IsNullOrEmpty(userToken) || string.IsNullOrEmpty(issuedDate))
+                    throw new Exception("Required claims missing");
+
+                var userData = DecryptUserData(userToken, issuedDate);
+
+                return new BaseResponseModel<UserJwtViewModel>
+                {
+                    Status = "000",
+                    Message = "Token valid",
+                    Data = userData
+                };
+            }
+            catch (SecurityTokenExpiredException)
+            {
+                return new BaseResponseModel<UserJwtViewModel>
                 {
                     Status = "405",
-                    Message = "Token has expired",
-                    Data = userData,
+                    Message = "Token has expired"
                 };
-
-
             }
             catch (Exception ex)
             {
-                return new BaseResponseModel<UserJwtViewModel>()
+                return new BaseResponseModel<UserJwtViewModel>
                 {
-                    Status = "405",
-                    Message = "Token has expired",
+                    Status = "500",
+                    Message = "Token validation failed: " + ex.Message
                 };
-
             }
-
         }
     }
 }

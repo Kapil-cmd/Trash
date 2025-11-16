@@ -16,6 +16,39 @@ namespace Application
             _connectionFactory = connectionFactory;
         }
 
+        public SpResponse<string> DbSeed(DbSeedModel model)
+        {
+            var response = new SpResponse<string>();
+            try
+            {
+                using (var connection = _connectionFactory.CreateConnection())
+                using (var command = new SqlCommand("PROC_USER", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Flag", "DbSeed");
+                    command.Parameters.AddWithValue("@UserName", model.UserName);
+                    command.Parameters.AddWithValue("@EmailAddress", model.EmailAddress);
+                    command.Parameters.AddWithValue("@Password", "Password");
+                    connection.Open();
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            response.ErrorCode = reader["ErrrorCode"].ToString();
+                            response.Message = reader["ErrorMessage"].ToString();
+                        }
+                    }
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.ErrorCode = "1";
+                response.Message = ex.Message;
+                return response;
+            }
+        }
+
         public SpResponse<List<User>> GetAllUsers()
         {
             var list = new SpResponse<List<User>>();

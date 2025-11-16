@@ -4,6 +4,7 @@ using Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using System.Net;
+using System.Reflection;
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -34,6 +35,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Configuration.SetStaticConfiguration();
 builder.Services.AddCoreServices();
 builder.Services.AddSignalR();
+PermissionScanner.GeneratePermission(builder.Configuration.GetConnectionString("DefaultConnection"));
+
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo()
@@ -66,7 +70,9 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
+
 var app = builder.Build();
+DbSeed.DbInitializer(app.Services);
 app.UseExceptionHandler(appError =>
 {
     appError.Run(async context =>
@@ -95,14 +101,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseCors("AllowReact");
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseAuthorization();
 app.UseEndpoints(endPoints =>
 {
     endPoints.MapHub<StatusHub>("/statusHub");
-    endPoints.MapHub<NotificationHub>("/notificationHub");
+    //endPoints.MapHub<NotificationHub>("/notificationHub");
 });
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
 app.UseStaticFiles();
 app.MapControllers();
 

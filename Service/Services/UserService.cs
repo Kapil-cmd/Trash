@@ -41,6 +41,12 @@ namespace Application
             try
             {
                 var data = _userRepository.Login(model);
+                if(data.ErrorCode == "000")
+                {
+                    var token = StaticMethods.GenTokenkey(data.Data);
+                    data.Data.Token = token.Data.Token;
+                    data.Data.ExpiryTimeUtc = token.Data.ExpiryTimeUtc;
+                }
                 response.Status = data.ErrorCode;
                 response.Data = data.Data;
                 response.Message = data.Message;

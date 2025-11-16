@@ -40,6 +40,8 @@ namespace Trash.Controllers
                         PhoneNumber = response.Data.PhoneNumber,
                         IsVerified = response.Data.IsVerified,
                         ImageUrl = response.Data.ImageUrl,
+                        Token = response.Data.Token,
+                        ExpiryTimeUtc = response.Data.ExpiryTimeUtc
                     });
                 }
                 else

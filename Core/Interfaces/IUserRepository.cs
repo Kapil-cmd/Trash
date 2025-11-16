@@ -8,5 +8,6 @@ namespace Infrastructure
         public SpResponse<LoginResponseViewModel> Login(LoginViewModel login);
         public SpResponse<UserDetailsViewModel> GetUserDetails(long userId);
         public SpResponse<UpdateUserDetailViewModel> UpdateUserDetails(UpdateUserDetailViewModel userDetails);
+        public SpResponse<string> DbSeed(DbSeedModel model);
     }
 }

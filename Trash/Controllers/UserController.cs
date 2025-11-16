@@ -14,6 +14,7 @@ namespace Trash.Controllers
             _userService = userService;
         }
         [HttpGet]
+        [AuthorizePermission("GetUserList")]
         public IActionResult GetUserList()
         {
             var response = _userService.GetAllUsers();
@@ -27,6 +28,7 @@ namespace Trash.Controllers
             }
         }
         [HttpGet]
+        [AuthorizePermission("GetUserInfo")]
         public IActionResult GetUserInfo(long userId)
         {
             var response = _userService.GetUserDetails(userId);
