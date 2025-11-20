@@ -22,7 +22,7 @@ namespace Application
             try
             {
                 using (var connection = _connectionFactory.CreateConnection())
-                using (var command = new SqlCommand("PROC_USER", connection))
+                using (var command = new SqlCommand("PROC_DbSeed", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@Flag", "DbSeed");

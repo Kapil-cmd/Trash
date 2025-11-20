@@ -1,5 +1,6 @@
 ﻿
-namespace Core;
+namespace Core
+{
     public class DbSeedModel
     {
         public string UserName { get; set; }
