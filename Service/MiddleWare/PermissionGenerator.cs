@@ -64,6 +64,65 @@ public static class PermissionScanner
                                 cmd.ExecuteNonQuery();
                             }
 
+                            // 1. Get PermissionId
+                            int permissionId;
+
+                            using (var getPermissionCmd = new SqlCommand(
+                                "SELECT PermissionId FROM DTbl_Permission WHERE SlugName = @slug", con))
+                            {
+                                getPermissionCmd.Parameters.AddWithValue("@slug", slug);
+                                permissionId = Convert.ToInt32(getPermissionCmd.ExecuteScalar());
+                            }
+
+
+                            int roleId;
+
+                            using (var roleCmd = new SqlCommand(
+                                "SELECT RoleId FROM CTbl_Roles WHERE RoleName = 'SuperAdmin'", con))
+                            {
+                                var result = roleCmd.ExecuteScalar();
+
+                                if (result == null)
+                                {
+                                    Console.Write("SuperAdmin role not found.");
+                                    break;
+                                    throw new Exception("SuperAdmin role not found.");
+                                }
+
+                                roleId = Convert.ToInt32(result);
+                            }
+
+
+                            var checkPermissionSql = @"
+                                  SELECT 1 
+                                  FROM CTbl_RolePermission 
+                                  WHERE PermissionId = @PermissionId AND RoleId = @RoleId";
+
+                            using (var checkPermissionCmd = new SqlCommand(checkPermissionSql, con))
+                            {
+                                checkPermissionCmd.Parameters.AddWithValue("@PermissionId", permissionId);
+                                checkPermissionCmd.Parameters.AddWithValue("@RoleId", roleId);
+
+                                var existsRolePermission = checkPermissionCmd.ExecuteScalar();
+
+                                if (existsRolePermission == null)
+                                {
+                                    var insertRolePermissionSql = @"
+                                        INSERT INTO CTbl_RolePermission
+                                            (RoleId, PermissionId, SlugName, AssignedBy, AssignedDate)
+                                        VALUES
+                                            (@RoleId, @PermissionId, @SlugName, @AssignedBy, @AssignedDate)";
+
+                                    using var insertCmd = new SqlCommand(insertRolePermissionSql, con);
+                                    insertCmd.Parameters.AddWithValue("@RoleId", roleId);
+                                    insertCmd.Parameters.AddWithValue("@PermissionId", permissionId);
+                                    insertCmd.Parameters.AddWithValue("@SlugName", slug);
+                                    insertCmd.Parameters.AddWithValue("@AssignedBy", createdBy);
+                                    insertCmd.Parameters.AddWithValue("@AssignedDate", DateTime.Now);
+
+                                    insertCmd.ExecuteNonQuery();
+                                }
+                            }
 
 
                         }
