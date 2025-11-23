@@ -200,7 +200,7 @@ namespace Application
                                     PhoneNumber = reader["PhoneNumber"].ToString(),
                                     //Status = reader["Status"].ToString(),
                                     IsVerified = reader["IsVerified"].ToString(),
-                                    ImageUrl = reader["ImageAddress"].ToString(),
+                                    ImageUrl = reader["ImageAddress"].ToString()??"",
                                     Token = Guid.NewGuid().ToString()
                                 };
                             }

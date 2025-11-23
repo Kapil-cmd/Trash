@@ -40,21 +40,31 @@ public static class PermissionScanner
                             var dateTime = DateTime.Now;
                             using var con = new SqlConnection(_connectionString);
                             con.Open();
+                            var checkSql = @"SELECT 1 FROM DTbl_Permission WHERE SlugName = @slug";
+                            using var checkCmd = new SqlCommand(checkSql, con);
+                            checkCmd.Parameters.AddWithValue("@slug", slug);
 
-                            var sql = @"
-                                    INSERT INTO DTbl_Permission
-                                        (SlugName, ControllerName, ActionName, CreatedBy, CreatedDateTime)
-                                    VALUES
-                                        (@slug, @controllerName, @actionName, @CreatedBy, @dateTime)";
+                            var exists = checkCmd.ExecuteScalar();
 
-                            using var cmd = new SqlCommand(sql, con);
-                            cmd.Parameters.AddWithValue("@slug", slug);
-                            cmd.Parameters.AddWithValue("@controllerName", controllerName);
-                            cmd.Parameters.AddWithValue("@actionName", actionName);
-                            cmd.Parameters.AddWithValue("@CreatedBy", createdBy);
-                            cmd.Parameters.AddWithValue("@dateTime", DateTime.Now);
+                            if (exists == null)
+                            {
+                                var sql = @"
+                                        INSERT INTO DTbl_Permission
+                                            (SlugName, ControllerName, ActionName, CreatedBy, CreatedDateTime)
+                                        VALUES
+                                            (@slug, @controllerName, @actionName, @CreatedBy, @dateTime)";
 
-                            cmd.ExecuteNonQuery();
+                                using var cmd = new SqlCommand(sql, con);
+                                cmd.Parameters.AddWithValue("@slug", slug);
+                                cmd.Parameters.AddWithValue("@controllerName", controllerName);
+                                cmd.Parameters.AddWithValue("@actionName", actionName);
+                                cmd.Parameters.AddWithValue("@CreatedBy", createdBy);
+                                cmd.Parameters.AddWithValue("@dateTime", DateTime.Now);
+
+                                cmd.ExecuteNonQuery();
+                            }
+
+
 
                         }
                     }

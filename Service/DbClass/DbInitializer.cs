@@ -15,15 +15,15 @@ namespace Application
             var userRepo = scopeServices.GetRequiredService<IUserRepository>();
 
             var list = userRepo.GetAllUsers();
-            if (list.Data.Count() < 0)
+            if (list.Data == null)
             {
-                var dbSeed = new DbSeedModel()
-                {
-                    EmailAddress = "SuperAdmin@proton.me",
-                    Password = "superadmin123",
-                    UserName = "superadmin"
-                };
-                userRepo.DbSeed(dbSeed);
+                    var dbSeed = new DbSeedModel()
+                    {
+                        EmailAddress = "SuperAdmin@proton.me",
+                        Password = "superadmin123",
+                        UserName = "superadmin"
+                    };
+                    userRepo.DbSeed(dbSeed);
             }
 
         }
