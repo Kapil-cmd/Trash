@@ -1,4 +1,6 @@
-﻿namespace Core
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Core
 {
     public class RolePermissionViewModel
     {
@@ -12,24 +14,36 @@
     }
     public class AddRoleViewModel
     {
+        [Required]
         public string RoleName { get; set; }
+        [Required]
         public string CreatedBy { get; set; }
-        public DateTime CreatedDateTime { get; set; }
+        public string? Status { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
     }
     public class UpdateRoleViewModel
     {
+        [Required]
         public long RoleId { get; set; }
+        [Required]
         public string RoleName { get; set; }
+        [Required]
+        public string Status { get; set; }
     }
     public class AssignRoleViewModel
     {
+        [Required]
         public long RoleId { get; set; }
+        [Required]
         public long UserId { get; set; }
+        [Required]
         public string CreatedBy { get; set; }
     }
     public class RemoveRoleViewModel
     {
+        [Required]
         public long RoleId { get; set; }
+        [Required]
         public long UserId { get; set; }
     }
     public class AssignedRolePermission
@@ -66,7 +80,9 @@
     }
     public class RemoveRolePermission
     {
+        [Required]
         public long RoleId { get; set; }
+        [Required]
         public long PermissionId { get; set; }
     }
 }

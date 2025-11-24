@@ -29,6 +29,7 @@ namespace Infrastructure
                     command.Parameters.AddWithValue("@Flag", spName);
                     command.Parameters.AddWithValue("@RoleName", model.RoleName ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@CreatedBy", model.CreatedBy ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@Status", model.Status?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@CreatedDateTime", DateTime.Now);
 
                     connection.Open();
@@ -379,10 +380,15 @@ namespace Infrastructure
                             var model = new RoleViewModel()
                             {
                                 RoleId = Convert.ToInt64(reader["RoleId"]),
-                                RoleName = reader["RoleName"].ToString()
+                                RoleName = reader["RoleName"].ToString(),
+                                CreatedBy = reader["CreatedBy"].ToString(),
+                                CreatedDateTime = Convert.ToDateTime(reader["CreatedDateTime"]).ToString("dd/MM/yyyy")
                             };
                             list.Add(model);
                         }
+                        response.ErrorCode = "000";
+                        response.Message ="ROLE LIST FETCH SUCESSFULLY!!!";
+                        response.Data = list;
                         return response;
                     }
                 }
@@ -407,6 +413,7 @@ namespace Infrastructure
                     command.Parameters.AddWithValue("@Flag", "UpdateRole");
                     command.Parameters.AddWithValue("@RoleId", model.RoleId);
                     command.Parameters.AddWithValue("@RoleName", model.RoleName ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@Status", model.Status ?? (object)DBNull.Value);
 
                     con.Open();
                     using (var reader = command.ExecuteReader())

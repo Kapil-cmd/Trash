@@ -14,6 +14,7 @@ namespace Core
             services.AddScoped<IItemTypeRepository,ItemTypeRepository>();
             services.AddScoped<IItemRepository,ItemRepository>();
             services.AddScoped<IListRepository,ListRepository>();
+            services.AddScoped<IRolePermissionRepository,RolePermissionRepository>();
             return services;
         }
     }

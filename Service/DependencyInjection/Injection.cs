@@ -13,6 +13,7 @@ namespace Application
             services.AddScoped<ItemTypeService>();
             services.AddScoped<ItemService>();
             services.AddScoped<ListService>();
+            services.AddScoped<UserRoleService>();
 
 
             return services;
