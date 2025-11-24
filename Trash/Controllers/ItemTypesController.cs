@@ -14,7 +14,14 @@ namespace Trash.Controllers
         {
             _itemTypeService = itemTypeService;
         }
+        [HttpGet]
+        [AuthorizePermission("ItemTypeList")]
+        public IActionResult ItemTypeList()
+        {
+            return Ok();
+        }
         [HttpPost]
+        [AuthorizePermission("AddItemTypes")]
         public IActionResult AddItemType(AddItemTypeViewModel model)
         {
             var response = _itemTypeService.AddItemType(model);

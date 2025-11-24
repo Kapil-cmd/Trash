@@ -35,6 +35,7 @@ namespace Trash.Controllers
             return Ok(response);
         }
         [HttpPost]
+        [AuthorizePermission("UpdateUserInfo")]
         public async Task<IActionResult> UpdateUserInfo(UpdateUserDetailViewModel model)
         {
             if (ModelState.IsValid)

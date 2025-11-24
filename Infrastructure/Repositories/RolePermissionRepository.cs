@@ -26,11 +26,11 @@ namespace Infrastructure
                 {
                     command.CommandType = CommandType.StoredProcedure;
 
-                    command.Parameters.AddWithValue("@Flag", spName);
+                    command.Parameters.AddWithValue("@Flag", "AddRole");
                     command.Parameters.AddWithValue("@RoleName", model.RoleName ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@CreatedBy", model.CreatedBy ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@Status", model.Status?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@CreatedDateTime", DateTime.Now);
+                    command.Parameters.AddWithValue("@Status", model.Status ?? (object)DBNull.Value);
+                    //command.Parameters.AddWithValue("@CreatedDateTime", DateTime.Now);
 
                     connection.Open();
                     using (var reader = command.ExecuteReader())
@@ -190,9 +190,9 @@ namespace Infrastructure
             }
         }
 
-        public SpResponse<List<RolePermission>> GetRolePermisison(long RoleId)
+        public SpResponse<RolePermission> GetRolePermisison(long RoleId)
         {
-            var response = new SpResponse<List<RolePermission>>();
+            var response = new SpResponse<RolePermission>();
             try
             {
                 var model = new RolePermission();
@@ -206,7 +206,7 @@ namespace Infrastructure
 
                     using (var reader = command.ExecuteReader())
                     {
-                        if (reader.Read())
+                        while (reader.Read())
                         {
                             var permission = new PermissionViewModel();
                             permission.ActionName = reader["ActionName"].ToString();
@@ -215,15 +215,11 @@ namespace Infrastructure
                             permission.SlugName = reader["SlugName"].ToString();
 
                             model.PermissionList.Add(permission);
-                            model.RoleId = RoleId;
-                            response.Message = "PERMISSION FETCHED SUCESSFULLY!!!";
-                            response.ErrorCode = "000";
                         }
-                        else
-                        {
-                            response.ErrorCode = "1";
-                            response.Message = "UNABLE TO FETCH PERMISSION!!!";
-                        }
+                        model.RoleId = RoleId;
+                        response.Message = "PERMISSION FETCHED SUCESSFULLY!!!";
+                        response.ErrorCode = "000";
+                        response.Data = model;
                         return response;
                     }
 ;
@@ -254,7 +250,7 @@ namespace Infrastructure
                     con.Open();
                     using (var reader = command.ExecuteReader())
                     {
-                        if (reader.Read())
+                        while (reader.Read())
                         {
                             var permission = new PermissionViewModel
                             {
@@ -265,12 +261,13 @@ namespace Infrastructure
                             };
                             model.PermissionList.Add(permission);
                         }
-                        else
-                        {
-                            response.ErrorCode = "1";
-                            response.Message = "UNABLE TO GET USER PERMISSION!!!";
-                        }
                         model.UserId = userId;
+                        response.ErrorCode = "000";
+                        response.Message = "PERMISSION FETCHED SUCCESSFULLY!!!";
+                        if (model.PermissionList.Count > 0)
+                        {
+                            response.Data = model;
+                        }
                         return response;
                     }
                 }
@@ -313,7 +310,8 @@ namespace Infrastructure
                     }
                 }
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 response.ErrorCode = "1";
                 response.Message = "TECHNICAL ERROR OCCURRES WHILE PROCESSING YOUR REQUEST!!!";
@@ -372,7 +370,7 @@ namespace Infrastructure
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@Flag", "RoleList");
-                     con.Open();
+                    con.Open();
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -387,12 +385,13 @@ namespace Infrastructure
                             list.Add(model);
                         }
                         response.ErrorCode = "000";
-                        response.Message ="ROLE LIST FETCH SUCESSFULLY!!!";
+                        response.Message = "ROLE LIST FETCH SUCESSFULLY!!!";
                         response.Data = list;
                         return response;
                     }
                 }
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 response.ErrorCode = "1";
                 response.Message = "UNABLE TO GET ROLE LIST!!!";

@@ -252,9 +252,9 @@ namespace Application
                 return response;
             }
         }
-        public BaseResponseModel<List<RolePermission>> GetRolePermisison(long RoleId)
+        public BaseResponseModel<RolePermission> GetRolePermisison(long RoleId)
         {
-            var response = new BaseResponseModel<List<RolePermission>>();
+            var response = new BaseResponseModel<RolePermission>();
             try
             {
                 if (RoleId == 0)

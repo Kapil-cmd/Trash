@@ -13,7 +13,7 @@ namespace Trash
         {
             _itemService = itemService;
         }
-
+        [AuthorizePermission("AddItem")]
         [HttpPost]
         public async Task<IActionResult> AddItem([FromForm] AddItemViewModel model)
         {
@@ -27,12 +27,14 @@ namespace Trash
                 return Ok("PLEASE FILL THE FORM PROPERLY!!!");
             }
         }
+        [AuthorizePermission("ItemList")]
         [HttpGet]
         public IActionResult GetItemList()
         {
             var response = _itemService.ItemList();
             return Ok(response);
         }
+        [AuthorizePermission("UpdateItem")]
         [HttpPost]
         public async Task<IActionResult> UpdateItemStatus(UpdateItemStatus model)
         {

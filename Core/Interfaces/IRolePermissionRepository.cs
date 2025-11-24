@@ -11,7 +11,7 @@ namespace Core
         public SpResponse<string> AssignRolePermission(AssignedRolePermission model);
         public SpResponse<UserPermission> GetUserPermission(long userId);
         public SpResponse<string> RemoveRolePermission(RemoveRolePermission model);
-        public SpResponse<List<RolePermission>> GetRolePermisison(long RoleId);
+        public SpResponse<RolePermission> GetRolePermisison(long RoleId);
         public SpResponse<List<PermissionViewModel>> PermissionList();
         public SpResponse<List<RoleViewModel>> RoleList();
     }
